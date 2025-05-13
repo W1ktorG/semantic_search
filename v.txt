@@ -1,0 +1,22 @@
+multi-qa-MiniLM-L6-cos-v1
+all-MiniLM-L6-v2
+
+
+from openai import OpenAI
+import os
+
+os.environ["OPENAI_API_KEY"] = ""
+
+openai_client = OpenAI()
+
+def emb_text(text):
+    return (
+        openai_client.embeddings.create(input=text, model="text-embedding-3-large")
+        .data[0]
+        .embedding
+    )
+
+test_embedding = emb_text("test")
+embedding_dim = len(test_embedding)
+print(embedding_dim)
+print(test_embedding[:10])

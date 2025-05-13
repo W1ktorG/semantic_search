@@ -1,0 +1,60 @@
+{
+  "nazwa_szkoły": "Zespół Szkół Nr 2 im. Przyjaźni Polsko-Norweskiej w Ostrzeszowie",
+  "rok_założenia": 1972,
+  "opis": "Placówka kształcąca nieustannie od 1972 roku. Modernizowana i dostosowywana do wymogów lokalnego rynku pracy.",
+  "absolwenci": {
+    "łączna_liczba": 8000,
+    "osiągnięcia": [
+      "tytuły naukowe (politechnika, humanistyka, sztuka, wojskowość, oświata)",
+      "ważne funkcje w administracji państwowej i oświatowej",
+      "dobrzy fachowcy, menadżerowie, właściciele firm"
+    ]
+  },
+  "obecna_sytuacja": {
+    "liczba_uczniów": 700,
+    "kadra": "wysoko wykwalifikowana kadra nauczycielska"
+  },
+  "szkoły": [
+    {
+      "typ": "Liceum Ogólnokształcące",
+      "cykl": "4-letni",
+      "profile": [
+        "profil ogólny",
+        "profil turystyczno-przyrodniczy"
+      ]
+    },
+    {
+      "typ": "Technikum",
+      "cykl": "5-letni",
+      "zawody": [
+        "technik architektury krajobrazu",
+        "technik elektryk (z elementami OZE)",
+        "technik informatyk",
+        "technik logistyk",
+        "technik mechatronik (z elementami OZE)",
+        "technik pojazdów samochodowych",
+        "technik programista",
+        "technik rolnik",
+        "technik żywienia i usług gastronomicznych"
+      ]
+    },
+    {
+      "typ": "Branżowa Szkoła I Stopnia",
+      "cykl": "3-letni",
+      "zawody": [
+        "elektryk",
+        "magazynier – logistyk",
+        "mechanik pojazdów samochodowych",
+        "operator obrabiarek skrawających",
+        "klasa wielozawodowa"
+      ]
+    },
+    {
+      "typ": "Branżowa Szkoła II Stopnia",
+      "cykl": "2-letni",
+      "zawody": [
+        "technik pojazdów samochodowych"
+      ]
+    }
+  ]
+}

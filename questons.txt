@@ -1,0 +1,10 @@
+    "Kiedy została założona szkoła?",
+    "Ilu uczniów obecnie uczęszcza do szkoły?",
+    "Jakie są dostępne kierunki w technikum?",
+    "Jakie są profile w liceum?",
+    "Kim są absolwenci tej szkoły?",
+    "Jakie zawody są w Branżowej Szkole I Stopnia?",
+
+
+
+    curl -X POST http://localhost:11434/api/embed -H "Content-Type: application/json" -d "{\"model\": \"llama3.2\", \"input\": \"Why is the sky blue?\"}"

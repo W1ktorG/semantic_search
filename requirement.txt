@@ -1,0 +1,1 @@
+pip install faiss-cpu langchain streamlit transformers huggingface_hub
