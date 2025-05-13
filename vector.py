@@ -56,7 +56,7 @@ if query:
     results = qdrant.search(
         collection_name="szkola",
         query_vector=query_vector,
-        limit=10
+        limit=5
     )
 
     st.subheader("Najtrafniejsze odpowiedzi:")
