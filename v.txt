@@ -20,3 +20,7 @@ test_embedding = emb_text("test")
 embedding_dim = len(test_embedding)
 print(embedding_dim)
 print(test_embedding[:10])
+
+
+
+streamlit run vector2.py --server.runOnSave true

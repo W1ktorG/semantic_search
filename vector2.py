@@ -1,69 +1,99 @@
-# import streamlit as st
-# import json
-# from openai import OpenAI
-# import os
-# from qdrant_client import QdrantClient
-# from qdrant_client.models import Distance, VectorParams, PointStruct
-# from dotenv import load_dotenv
+import streamlit as st
+import json
+from sentence_transformers import SentenceTransformer
+from qdrant_client import QdrantClient
+from qdrant_client.models import Distance, VectorParams, PointStruct
+import os
+from datetime import datetime
+from dotenv import load_dotenv
 
-# load_dotenv()
-# openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+load_dotenv()
 
-# def emb_text(text):
-#     return (
-#         openai_client.embeddings.create(input=text, model="text-embedding-3-large")
-#         .data[0]
-#         .embedding
-#     )
+def load_data_and_model():
+    qdrant = QdrantClient(
+        url=os.getenv("QDRANT_URL"),
+        api_key=os.getenv("QDRANT_API_KEY"),
+        timeout=60
+    )
 
-# def load_data_and_model():
-#     with open("szkola.json", "r", encoding="utf-8") as f:
-#         data = json.load(f)
+    try:
+        qdrant.get_collection(collection_name="news")
+    except Exception as e:
+        st.write("Kolekcja nie istnieje. Tworzę nową kolekcję.")
 
-#     texts = [  
-#         data["opis"],
-#         f"Szkoła została założona w {data['rok_założenia']} roku.",
-#         f"Szkołę ukończyło ponad {data['absolwenci']['łączna_liczba']} absolwentów.",
-#         f"Aktualnie do szkoły uczęszcza {data['obecna_sytuacja']['liczba_uczniów']} uczniów.",
-#         f"Kadra nauczycielska to: {data['obecna_sytuacja']['kadra']}."
-#     ] + [f"Osiągnięcie absolwenta: {a}" for a in data["absolwenci"]["osiągnięcia"]]
+        with open("news.json", "r", encoding="utf-8") as f:
+            data = json.load(f)
 
-#     for szkola in data["szkoły"]:
-#         typ, cykl = szkola["typ"], szkola["cykl"]
-#         texts.append(f"{typ} - cykl {cykl}")
-#         if "profile" in szkola: texts.extend([f"{typ} - profil: {p}" for p in szkola["profile"]])
-#         if "zawody" in szkola: texts.extend([f"{typ} - zawód: {z}" for z in szkola["zawody"]])
+        texts = []
+        payloads = []
 
-#     embeddings = [emb_text(text) for text in texts]
+        for item in data:
+            title = item.get("title", "")
+            date = item.get("date", "")
+            content = item.get("content", "")
+            link = item.get("link", "")
+            
+            # Łączymy tytuł, datę i treść dla lepszego wyszukiwania
+            combined_text = f"{title} {date} {content}".strip()
+            texts.append(combined_text)
+            payloads.append({
+                "title": title,
+                "date": date,
+                "content": content,
+                "link": link,
+                "ID": item.get("ID", "")
+            })
 
-#     qdrant = QdrantClient(":memory:")
-#     qdrant.create_collection(
-#         collection_name="szkola",
-#         vectors_config=VectorParams(size=len(embeddings[0]), distance=Distance.COSINE)
-#     )
+        model = SentenceTransformer("all-MiniLM-L6-v2")
+        embeddings = model.encode(texts)
 
-#     qdrant.upsert(
-#         collection_name="szkola",
-#         points=[PointStruct(id=idx, vector=embedding, payload={"text": text})
-#                 for idx, (text, embedding) in enumerate(zip(texts, embeddings))]
-#     )
+        qdrant.recreate_collection(
+            collection_name="news",
+            vectors_config=VectorParams(size=embeddings.shape[1], distance=Distance.COSINE),
+        )
 
-#     return qdrant
+        qdrant.upsert(
+            collection_name="news",
+            points=[
+                PointStruct(id=i, vector=vec.tolist(), payload=payloads[i])
+                for i, vec in enumerate(embeddings)
+            ]
+        )
 
-# qdrant = load_data_and_model()
+        st.write("Kolekcja 'news' została utworzona i dane zostały załadowane.")
 
-# query = st.text_input("Zadaj pytanie o szkole:")
-
-# if query:
-#     query_vector = emb_text(query)
+    model = SentenceTransformer("all-MiniLM-L6-v2")  
     
-#     results = qdrant.search(
-#         collection_name="szkola",
-#         query_vector=query_vector,
-#         limit=5
-#     )
+    return model, qdrant
 
-#     st.subheader("Najtrafniejsze odpowiedzi:")
-#     for result in results:
-#         st.write(f"- {result.payload['text']} (podobieństwo: {result.score:.3f})")
-#         print()
+model, qdrant = load_data_and_model()
+
+st.title("Wyszukiwarka wiadomości")
+
+query = st.text_input("Zadaj pytanie:")
+
+if query:
+    query_vector = model.encode([query])[0].tolist()
+    results = qdrant.search(
+        collection_name="news",
+        query_vector=query_vector,
+        limit=5
+    )
+
+    st.subheader("Najtrafniejsze wiadomości:")
+    for result in results:
+        title = result.payload.get("title", "Brak tytułu")
+        date = result.payload.get("date", "Brak daty")
+        content = result.payload.get("content") or ""
+        link = result.payload.get("link", "")
+
+        st.write(f"###  {title}")
+        st.write(f" {date}")
+    
+        if link and link != "no link":
+            st.write(f" [Link do artykułu]({link})")
+    
+        st.write(content[:300] + "..." if len(content) > 300 else content)
+    
+        st.write(f"**Trafność:** {result.score:.4f}")
+        st.write("---")
